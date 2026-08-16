@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<title>Калькулятор оклада и НДФЛ</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --panel:#ffffff; --panel-2:#f8fafc; --text:#18202b; --muted:#687383;
+    --line:#e4e9f0; --navy:#14243a; --navy2:#203854; --red:#cf2f36; --red-soft:#fff0f1;
+    --green:#167b59; --green-soft:#eaf8f2; --amber:#a26600; --amber-soft:#fff5df;
+    --shadow:0 14px 36px rgba(23,35,52,.08); --radius:22px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#eef2f7 0,#f7f8fa 32%,#f4f6f9 100%);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);font-variant-numeric:tabular-nums}
+  button,input{font:inherit}
+  .shell{max-width:1380px;margin:0 auto;padding:30px 28px 48px}
+  .hero{position:relative;overflow:hidden;background:linear-gradient(130deg,var(--navy) 0%,#1c3653 64%,#264763 100%);border-radius:28px;color:white;padding:30px 34px;box-shadow:0 18px 46px rgba(19,34,55,.20);margin-bottom:22px}
+  .hero:after{content:"";position:absolute;width:380px;height:380px;border-radius:50%;right:-120px;top:-205px;border:72px solid rgba(255,255,255,.05)}
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;position:relative;z-index:1}
+  .eyebrow{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#cbd7e5;font-weight:700;margin-bottom:9px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#ff5a60;box-shadow:0 0 0 5px rgba(255,90,96,.14)}
+  h1{font-size:clamp(28px,4vw,44px);line-height:1.05;margin:0 0 10px;letter-spacing:-.035em;max-width:820px}
+  .hero p{margin:0;color:#d7e0ea;max-width:830px;line-height:1.55;font-size:15px}
+  .status-pill{white-space:nowrap;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);padding:10px 13px;border-radius:999px;font-size:12px;color:#e8eef5;backdrop-filter:blur(8px)}
+
+  .layout{display:grid;grid-template-columns:390px minmax(0,1fr);gap:22px;align-items:start}
+  .panel{background:var(--panel);border:1px solid rgba(218,225,233,.8);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .controls{padding:22px;position:sticky;top:18px}
+  .panel-title{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px}.panel-sub{font-size:12.5px;line-height:1.5;color:var(--muted);margin:0 0 18px}
+  .segmented{display:grid;grid-template-columns:1fr 1fr;background:#edf1f5;padding:4px;border-radius:14px;margin:0 0 22px}
+  .segmented button{border:0;background:transparent;color:#657180;padding:11px 8px;border-radius:11px;cursor:pointer;font-weight:750;font-size:13px;transition:.2s}
+  .segmented button.active{background:#fff;color:var(--navy);box-shadow:0 2px 10px rgba(19,34,55,.10)}
+  .field{margin:0 0 16px}.field-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:7px}
+  label{font-size:12.5px;font-weight:750;color:#394658}.hint{font-size:11px;color:#8a95a3}
+  .input-wrap{position:relative}.input-wrap input{width:100%;border:1px solid #dce3ea;border-radius:14px;background:#fbfcfd;padding:14px 48px 14px 14px;font-size:18px;font-weight:760;outline:0;transition:.2s;color:#1f2936}
+  .input-wrap input:focus{border-color:#8ba2bb;box-shadow:0 0 0 4px rgba(74,112,151,.10);background:white}.suffix{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:12px;color:#8a95a3;font-weight:700;pointer-events:none}
+  .primary{width:100%;border:0;background:linear-gradient(135deg,var(--red),#b6222b);color:white;padding:14px 16px;border-radius:14px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(207,47,54,.22);transition:.18s}.primary:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(207,47,54,.27)}
+  .secondary-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.ghost{border:1px solid #dce3ea;background:#fff;color:#425064;border-radius:12px;padding:10px 8px;font-size:12px;font-weight:720;cursor:pointer}.ghost:hover{background:#f7f9fb}
+  .tax-scale{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}.scale-title{font-size:12px;font-weight:800;color:#4f5b6a;margin-bottom:10px}.scale{display:flex;height:7px;overflow:hidden;border-radius:999px;background:#e5eaf0;margin-bottom:10px}.scale span:nth-child(1){width:18%;background:#95b4a6}.scale span:nth-child(2){width:16%;background:#82a9bd}.scale span:nth-child(3){width:25%;background:#748cae}.scale span:nth-child(4){width:24%;background:#b18a91}.scale span:nth-child(5){width:17%;background:#c65d65}.brackets{display:grid;grid-template-columns:1fr auto;row-gap:7px;font-size:11.5px;color:#6f7b8a}.brackets b{color:#2c3744}
+  .notice{margin-top:18px;border-radius:14px;padding:12px 13px;background:#f7f9fb;border:1px solid var(--line);font-size:11px;line-height:1.55;color:#6a7584}.notice strong{color:#364353}
+
+  .content{min-width:0}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}.card{padding:18px;background:var(--panel);border:1px solid rgba(218,225,233,.85);border-radius:18px;box-shadow:0 8px 24px rgba(31,45,63,.055);min-width:0}.card .k{font-size:11.5px;color:#7b8795;margin-bottom:7px}.card .v{font-size:clamp(18px,2vw,27px);font-weight:830;letter-spacing:-.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card .s{font-size:11px;color:#98a2ae;margin-top:4px}.card.accent{background:linear-gradient(145deg,#fff,#fff6f6);border-color:#f0cfd2}.card.accent .v{color:#b92c34}.card.green{background:linear-gradient(145deg,#fff,#f2fbf7);border-color:#d9eee4}.card.green .v{color:#14694f}
+  .chart-panel{padding:20px 20px 18px;margin-bottom:14px}.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:16px}.section-head h2{font-size:16px;letter-spacing:-.015em;margin:0}.section-head p{font-size:11.5px;color:#8994a1;margin:4px 0 0}.legend{display:flex;gap:13px;font-size:11px;color:#738090;white-space:nowrap}.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}.legend .n{background:#244d73}.legend .t{background:#d85c62}
+  .month-bars{display:grid;grid-template-columns:repeat(12,minmax(24px,1fr));gap:9px;align-items:end;height:168px;border-bottom:1px solid #dfe5eb;padding:4px 2px 0}.mbar{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-width:0}.stack{height:120px;width:100%;max-width:34px;display:flex;flex-direction:column-reverse;justify-content:flex-start;border-radius:7px 7px 2px 2px;overflow:hidden;background:#edf1f5}.stack .net{background:linear-gradient(180deg,#315f89,#23476a)}.stack .tax{background:linear-gradient(180deg,#e27277,#c94b52)}.mname{font-size:9.5px;color:#7c8795;white-space:nowrap}
+
+  .table-panel{overflow:hidden}.table-head{padding:18px 20px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid var(--line)}.table-head h2{font-size:16px;margin:0}.table-head .meta{font-size:11.5px;color:#8994a1}.table-wrap{overflow:auto;max-height:525px}table{border-collapse:separate;border-spacing:0;width:100%;min-width:1030px;font-size:12px}thead th{position:sticky;top:0;z-index:1;background:#f8fafc;color:#657180;text-align:right;padding:11px 12px;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:800;white-space:nowrap}thead th:first-child{text-align:left}tbody td{padding:11px 12px;border-bottom:1px solid #edf0f3;text-align:right;white-space:nowrap}tbody td:first-child{text-align:left;font-weight:720;color:#344152}tbody tr:hover td{background:#fbfcfd}.bonus-row td{background:#fffaf4}.rate-badge{display:inline-flex;padding:4px 7px;border-radius:999px;background:#f1f4f7;color:#47576a;font-weight:800}.tax-cell{color:#b43c43}.net-cell{color:#166a51;font-weight:750}
+  .footer-note{padding:16px 20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:18px;align-items:flex-start;font-size:11px;color:#7d8895;line-height:1.5}.footer-note a{color:#466987;text-decoration:none}.footer-note a:hover{text-decoration:underline}
+  .error{display:none;margin:0 0 14px;padding:12px 14px;border-radius:12px;background:var(--red-soft);color:#a32d34;border:1px solid #f0c7ca;font-size:12px}.error.show{display:block}
+
+  @media(max-width:1100px){.layout{grid-template-columns:1fr}.controls{position:static}.cards{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:680px){.shell{padding:14px 12px 30px}.hero{padding:23px 20px;border-radius:20px}.hero-top{display:block}.status-pill{display:inline-block;margin-top:16px}.controls{padding:17px}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:14px}.card .v{font-size:18px}.chart-panel{padding:16px 12px}.month-bars{gap:4px}.mname{font-size:8px}.legend{display:none}.footer-note{display:block}.footer-note div+div{margin-top:8px}}
+  @media print{body{background:#fff}.shell{max-width:none;padding:0}.hero,.controls,.secondary-actions{box-shadow:none}.layout{display:block}.controls{display:none}.cards{grid-template-columns:repeat(4,1fr)}.panel,.card{box-shadow:none}.table-wrap{max-height:none;overflow:visible}.chart-panel{break-inside:avoid}.table-panel{break-inside:auto}.hero{border-radius:0}.footer-note{font-size:9px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="eyebrow"><span class="dot"></span>HR / Compensation & Benefits</div>
+        <h1>Калькулятор оклада и НДФЛ</h1>
+        <p>Расчёт GROSS ↔ NET с годовым нарастающим итогом, премией 70% в марте / 30% в июне и полной пятиступенчатой шкалой НДФЛ.</p>
+      </div>
+      <div class="status-pill">Шкала НДФЛ 2025–2026</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="panel controls">
+      <h2 class="panel-title">Параметры расчёта</h2>
+      <p class="panel-sub">Выберите направление расчёта и укажите месячный оклад и размер годовой премии.</p>
+      <div class="segmented" role="tablist">
+        <button id="modeNet" class="active" type="button">NET → GROSS</button>
+        <button id="modeGross" type="button">GROSS → NET</button>
+      </div>
+
+      <div id="err" class="error"></div>
+
+      <div class="field">
+        <div class="field-row"><label id="salaryLabel" for="salary">Желаемый NET в месяц</label><span class="hint" id="salaryHint">средний за год</span></div>
+        <div class="input-wrap"><input id="salary" inputmode="decimal" value="200 000" autocomplete="off"/><span class="suffix">₽</span></div>
+      </div>
+      <div class="field">
+        <div class="field-row"><label for="bonus">Годовая премия</label><span class="hint">от годового оклада</span></div>
+        <div class="input-wrap"><input id="bonus" inputmode="decimal" value="20" autocomplete="off"/><span class="suffix">%</span></div>
+      </div>
+
+      <button class="primary" id="calculate" type="button">Рассчитать</button>
+      <div class="secondary-actions">
+        <button class="ghost" id="excel" type="button">Экспорт в Excel</button>
+        <button class="ghost" id="print" type="button">Печать / PDF</button>
+      </div>
+
+      <div class="tax-scale">
+        <div class="scale-title">Прогрессивная шкала</div>
+        <div class="scale"><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="brackets">
+          <span>до 2,4 млн ₽</span><b>13%</b>
+          <span>2,4–5 млн ₽</span><b>15%</b>
+          <span>5–20 млн ₽</span><b>18%</b>
+          <span>20–50 млн ₽</span><b>20%</b>
+          <span>свыше 50 млн ₽</span><b>22%</b>
+        </div>
+      </div>
+      <div class="notice"><strong>Что учтено:</strong> зарплата и премия у одного налогового агента, расчёт НДФЛ нарастающим итогом с начала года. Не учитываются вычеты, отдельные налоговые базы, северные выплаты и иные специальные режимы.</div>
+    </aside>
+
+    <main class="content">
+      <section class="cards">
+        <div class="card accent"><div class="k">GROSS / месяц</div><div class="v" id="grossMonth">—</div><div class="s">базовый оклад</div></div>
+        <div class="card"><div class="k">GROSS / год</div><div class="v" id="grossYear">—</div><div class="s">без премии</div></div>
+        <div class="card green"><div class="k">Средний NET / месяц</div><div class="v" id="avgNet">—</div><div class="s">часть, относящаяся к окладу</div></div>
+        <div class="card"><div class="k">Средний НДФЛ</div><div class="v" id="avgTaxRate">—</div><div class="s">от всего облагаемого дохода</div></div>
+        <div class="card"><div class="k">Премия GROSS / год</div><div class="v" id="bonusYear">—</div><div class="s" id="bonusSplit">70% март · 30% июнь</div></div>
+        <div class="card"><div class="k">Общий доход / год</div><div class="v" id="totalIncome">—</div><div class="s">оклад + премия</div></div>
+        <div class="card"><div class="k">НДФЛ / год</div><div class="v" id="totalTax">—</div><div class="s">по прогрессивной шкале</div></div>
+        <div class="card"><div class="k">NET всего / год</div><div class="v" id="totalNet">—</div><div class="s">включая премию после НДФЛ</div></div>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="section-head">
+          <div><h2>Динамика выплат по месяцам</h2><p>NET всего и НДФЛ; премиальные месяцы выделяются увеличенной выплатой</p></div>
+          <div class="legend"><span><i class="n"></i>NET всего</span><span><i class="t"></i>НДФЛ</span></div>
+        </div>
+        <div class="month-bars" id="chart"></div>
+      </section>
+
+      <section class="panel table-panel">
+        <div class="table-head"><h2>Помесячный расчёт</h2><div class="meta" id="modeMeta">Подбор GROSS под заданный средний NET</div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Месяц</th><th>Оклад GROSS</th><th>Премия</th><th>Доход всего</th><th>Доход накопл.</th><th>Ставка</th><th>НДФЛ</th><th>Эфф. НДФЛ</th><th>Оклад NET</th><th>NET всего</th>
+            </tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="footer-note">
+          <div>Метод расчёта переходного месяца: налог за месяц = налог с накопленного дохода на конец месяца − налог с накопленного дохода на начало месяца. Это корректно распределяет доход между несколькими ступенями шкалы.</div>
+          <div>Источник ставок: <a href="https://www.nalog.gov.ru/rn14/taxation/taxes/ndfl/" target="_blank" rel="noopener">ФНС России</a></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+(() => {
+  const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const shortMonths = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+  const brackets = [
+    {to: 2400000, rate: .13},
+    {to: 5000000, rate: .15},
+    {to: 20000000, rate: .18},
+    {to: 50000000, rate: .20},
+    {to: Infinity, rate: .22}
+  ];
+  let mode = 'net';
+  let lastResult = null;
+
+  const el = id => document.getElementById(id);
+  const money0 = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+  const money2 = new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const pct1 = new Intl.NumberFormat('ru-RU',{minimumFractionDigits:1,maximumFractionDigits:1});
+  const fmt = n => money0.format(Math.round(n)) + ' ₽';
+  const fmt2 = n => money2.format(n) + ' ₽';
+
+  function parseNum(v){
+    if (typeof v === 'number') return v;
+    return Number(String(v).replace(/\s/g,'').replace(',','.').replace(/[^0-9.\-]/g,''));
+  }
+  function annualTax(income){
+    let rest = Math.max(0,income), prev=0, tax=0;
+    for(const b of brackets){
+      const top=b.to;
+      const slice=Math.max(0,Math.min(rest,top)-prev);
+      if(slice>0) tax += slice*b.rate;
+      if(rest<=top) break;
+      prev=top;
+    }
+    return tax;
+  }
+  function marginalRate(cum){
+    return brackets.find(b => cum <= b.to)?.rate ?? .22;
+  }
+  function schedule(monthlyGross, bonusPct){
+    const annualBase=monthlyGross*12;
+    const annualBonus=annualBase*bonusPct;
+    const march=annualBonus*.7, june=annualBonus*.3;
+    let cum=0, totalTax=0, salaryNetSum=0, totalNet=0;
+    const rows=[];
+    for(let i=0;i<12;i++){
+      const bonus = i===2 ? march : i===5 ? june : 0;
+      const income = monthlyGross + bonus;
+      const prevCum=cum;
+      cum += income;
+      const tax=Math.max(0,annualTax(cum)-annualTax(prevCum));
+      const eff=income ? tax/income : 0;
+      // Сохраняем логику исходного калькулятора: целевой NET относится к окладной части,
+      // а налог переходного месяца распределяется пропорционально между окладом и премией.
+      const salaryTax=income ? tax*(monthlyGross/income) : 0;
+      const salaryNet=monthlyGross-salaryTax;
+      const netAll=income-tax;
+      totalTax += tax; salaryNetSum += salaryNet; totalNet += netAll;
+      rows.push({month:months[i],short:shortMonths[i],monthlyGross,bonus,income,cum,rate:marginalRate(cum),tax,eff,salaryNet,netAll});
+    }
+    return {monthlyGross,annualBase,annualBonus,totalIncome:annualBase+annualBonus,totalTax,totalNet,avgSalaryNet:salaryNetSum/12,avgTaxRate: totalTax/(annualBase+annualBonus),rows};
+  }
+  function grossForTarget(targetNet, bonusPct){
+    let low=Math.max(1,targetNet), high=Math.max(targetNet/.70, targetNet*1.35);
+    while(schedule(high,bonusPct).avgSalaryNet < targetNet && high < 1e9) high*=1.5;
+    for(let i=0;i<100 && high-low>.01;i++){
+      const mid=(low+high)/2;
+      if(schedule(mid,bonusPct).avgSalaryNet < targetNet) low=mid; else high=mid;
+    }
+    return (low+high)/2;
+  }
+  function showError(msg=''){ el('err').textContent=msg; el('err').classList.toggle('show',!!msg); }
+  function validate(salary,bonus){
+    if(!Number.isFinite(salary)||!Number.isFinite(bonus)) return 'Введите числовые значения в оба поля.';
+    if(salary<=0) return 'Оклад должен быть больше нуля.';
+    if(bonus<0) return 'Премия не может быть отрицательной.';
+    if(bonus>500) return 'Проверьте размер премии: указано более 500%.';
+    return '';
+  }
+  function calculate(){
+    const salary=parseNum(el('salary').value), bonus=parseNum(el('bonus').value);
+    const msg=validate(salary,bonus); if(msg){showError(msg);return}
+    showError(); const bp=bonus/100;
+    const gross = mode==='net' ? grossForTarget(salary,bp) : salary;
+    lastResult=schedule(gross,bp);
+    lastResult.mode=mode; lastResult.inputSalary=salary; lastResult.bonusPct=bp;
+    render(lastResult);
+  }
+  function render(r){
+    el('grossMonth').textContent=fmt(r.monthlyGross);
+    el('grossYear').textContent=fmt(r.annualBase);
+    el('avgNet').textContent=fmt(r.avgSalaryNet);
+    el('avgTaxRate').textContent=pct1.format(r.avgTaxRate*100)+'%';
+    el('bonusYear').textContent=fmt(r.annualBonus);
+    el('totalIncome').textContent=fmt(r.totalIncome);
+    el('totalTax').textContent=fmt(r.totalTax);
+    el('totalNet').textContent=fmt(r.totalNet);
+
+    el('tbody').innerHTML=r.rows.map((x,i)=>`<tr class="${x.bonus>0?'bonus-row':''}">
+      <td>${x.month}</td><td>${fmt2(x.monthlyGross)}</td><td>${x.bonus?fmt2(x.bonus):'—'}</td><td>${fmt2(x.income)}</td><td>${fmt2(x.cum)}</td>
+      <td><span class="rate-badge">${Math.round(x.rate*100)}%</span></td><td class="tax-cell">${fmt2(x.tax)}</td><td>${pct1.format(x.eff*100)}%</td><td class="net-cell">${fmt2(x.salaryNet)}</td><td class="net-cell">${fmt2(x.netAll)}</td>
+    </tr>`).join('');
+
+    const max=Math.max(...r.rows.map(x=>x.income));
+    el('chart').innerHTML=r.rows.map(x=>{
+      const netH=(x.netAll/max)*112, taxH=(x.tax/max)*112;
+      return `<div class="mbar" title="${x.month}: NET ${fmt(x.netAll)}, НДФЛ ${fmt(x.tax)}"><div class="stack"><div class="net" style="height:${Math.max(2,netH)}px"></div><div class="tax" style="height:${Math.max(1,taxH)}px"></div></div><div class="mname">${x.short}</div></div>`;
+    }).join('');
+  }
+  function setMode(next){
+    mode=next; el('modeNet').classList.toggle('active',mode==='net'); el('modeGross').classList.toggle('active',mode==='gross');
+    if(mode==='net'){
+      el('salaryLabel').textContent='Желаемый NET в месяц'; el('salaryHint').textContent='средний за год'; el('modeMeta').textContent='Подбор GROSS под заданный средний NET';
+      el('salary').value='200 000';
+    }else{
+      el('salaryLabel').textContent='Оклад GROSS в месяц'; el('salaryHint').textContent='до НДФЛ'; el('modeMeta').textContent='Расчёт NET из заданного месячного GROSS';
+      el('salary').value='300 000';
+    }
+    calculate();
+  }
+  function xmlEscape(v){
+    return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+  }
+  function colName(n){
+    let s='';
+    while(n>0){ n--; s=String.fromCharCode(65+n%26)+s; n=Math.floor(n/26); }
+    return s;
+  }
+  function u16(n){ return [n&255,(n>>>8)&255]; }
+  function u32(n){ return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]; }
+  function crc32(bytes){
+    let crc=0xffffffff;
+    for(const b of bytes){
+      crc^=b;
+      for(let k=0;k<8;k++) crc=(crc>>>1)^((crc&1)?0xedb88320:0);
+    }
+    return (crc^0xffffffff)>>>0;
+  }
+  function zipStore(files){
+    const enc=new TextEncoder(), chunks=[], central=[];
+    let offset=0;
+    const push=arr=>{ const u=arr instanceof Uint8Array?arr:new Uint8Array(arr); chunks.push(u); offset+=u.length; };
+    for(const f of files){
+      const name=enc.encode(f.name), data=typeof f.data==='string'?enc.encode(f.data):f.data, crc=crc32(data), start=offset;
+      const local=new Uint8Array([
+        ...u32(0x04034b50),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),
+        ...u32(crc),...u32(data.length),...u32(data.length),...u16(name.length),...u16(0)
+      ]);
+      push(local); push(name); push(data);
+      central.push({name,crc,size:data.length,offset:start});
+    }
+    const centralStart=offset;
+    for(const c of central){
+      push(new Uint8Array([
+        ...u32(0x02014b50),...u16(20),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),
+        ...u32(c.crc),...u32(c.size),...u32(c.size),...u16(c.name.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(c.offset)
+      ]));
+      push(c.name);
+    }
+    const centralSize=offset-centralStart;
+    push(new Uint8Array([
+      ...u32(0x06054b50),...u16(0),...u16(0),...u16(central.length),...u16(central.length),
+      ...u32(centralSize),...u32(centralStart),...u16(0)
+    ]));
+    return new Blob(chunks,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+  function makeXlsxBlob(r){
+    const rows=[];
+    const addRow=(vals,styles=[])=>{
+      const rowNo=rows.length+1;
+      const cells=vals.map((v,i)=>{
+        if(v===null || v===undefined || v==='') return '';
+        const ref=colName(i+1)+rowNo, st=styles[i]!==undefined?` s="${styles[i]}"`:'';
+        if(typeof v==='number' && Number.isFinite(v)) return `<c r="${ref}"${st}><v>${v}</v></c>`;
+        return `<c r="${ref}" t="inlineStr"${st}><is><t>${xmlEscape(v)}</t></is></c>`;
+      }).join('');
+      rows.push(`<row r="${rowNo}">${cells}</row>`);
+    };
+
+    addRow(['Калькулятор оклада и НДФЛ'],[5]);
+    addRow([r.mode==='net'?'Режим: NET → GROSS':'Режим: GROSS → NET'],[6]);
+    addRow([]);
+    addRow(['Показатель','Значение'],[1,1]);
+    addRow(['GROSS / месяц',r.monthlyGross],[0,2]);
+    addRow(['GROSS / год',r.annualBase],[0,2]);
+    addRow(['Средний NET / месяц',r.avgSalaryNet],[0,2]);
+    addRow(['Премия GROSS / год',r.annualBonus],[0,2]);
+    addRow(['Общий доход / год',r.totalIncome],[0,2]);
+    addRow(['НДФЛ / год',r.totalTax],[0,2]);
+    addRow(['Средний НДФЛ',r.avgTaxRate],[0,3]);
+    addRow(['NET всего / год',r.totalNet],[0,2]);
+    addRow([]);
+    addRow(['Месяц','Оклад GROSS','Премия','Доход всего','Доход накопл.','Ставка','НДФЛ','Эфф. НДФЛ','Оклад NET','NET всего'],Array(10).fill(1));
+    r.rows.forEach(x=>addRow([x.month,x.monthlyGross,x.bonus,x.income,x.cum,x.rate,x.tax,x.eff,x.salaryNet,x.netAll],[0,2,2,2,2,3,2,3,2,2]));
+
+    const lastRow=rows.length;
+    const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <dimension ref="A1:J${lastRow}"/>
+  <sheetViews><sheetView workbookViewId="0"><pane ySplit="14" topLeftCell="A15" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
+  <sheetFormatPr defaultRowHeight="18"/>
+  <cols><col min="1" max="1" width="20" customWidth="1"/><col min="2" max="5" width="18" customWidth="1"/><col min="6" max="8" width="14" customWidth="1"/><col min="9" max="10" width="18" customWidth="1"/></cols>
+  <sheetData>${rows.join('')}</sheetData>
+  <autoFilter ref="A14:J${lastRow}"/>
+</worksheet>`;
+
+    const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <numFmts count="2"><numFmt numFmtId="164" formatCode="# ##0.00 ₽"/><numFmt numFmtId="165" formatCode="0.0%"/></numFmts>
+  <fonts count="3">
+    <font><sz val="11"/><name val="Calibri"/></font>
+    <font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Calibri"/></font>
+    <font><b/><color rgb="FF14243A"/><sz val="16"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF14243A"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2F5F8"/><bgColor indexed="64"/></patternFill></fill></fills>
+  <borders count="2"><border/><border><left style="thin"><color rgb="FFE4E9F0"/></left><right style="thin"><color rgb="FFE4E9F0"/></right><top style="thin"><color rgb="FFE4E9F0"/></top><bottom style="thin"><color rgb="FFE4E9F0"/></bottom></border></borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="7">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
+    <xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>
+    <xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1"/>
+    <xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"><alignment horizontal="left"/></xf>
+  </cellXfs>
+  <cellStyles count="1"><cellStyle name="Обычный" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+    const workbook=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Расчёт НДФЛ" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+    const workbookRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+    const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+    const types=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`;
+
+    return zipStore([
+      {name:'[Content_Types].xml',data:types},
+      {name:'_rels/.rels',data:rels},
+      {name:'xl/workbook.xml',data:workbook},
+      {name:'xl/_rels/workbook.xml.rels',data:workbookRels},
+      {name:'xl/worksheets/sheet1.xml',data:sheet},
+      {name:'xl/styles.xml',data:styles}
+    ]);
+  }
+  function downloadExcel(){
+    if(!lastResult) calculate(); if(!lastResult) return;
+    const blob=makeXlsxBlob(lastResult), a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='Расчёт_оклада_и_НДФЛ.xlsx'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
+  function normalizeInput(ev){
+    const n=parseNum(ev.target.value); if(Number.isFinite(n) && ev.target.id==='salary') ev.target.value=money0.format(n);
+  }
+  el('modeNet').addEventListener('click',()=>setMode('net')); el('modeGross').addEventListener('click',()=>setMode('gross'));
+  el('calculate').addEventListener('click',calculate); el('excel').addEventListener('click',downloadExcel); el('print').addEventListener('click',()=>window.print());
+  el('salary').addEventListener('blur',normalizeInput); el('salary').addEventListener('keydown',e=>{if(e.key==='Enter')calculate()}); el('bonus').addEventListener('keydown',e=>{if(e.key==='Enter')calculate()});
+  calculate();
+})();
+</script>
+</body>
+</html>
